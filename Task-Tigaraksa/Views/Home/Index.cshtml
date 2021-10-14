@@ -1,0 +1,152 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<Container>
+    <form>
+        <div class="row mb-3">
+            <label for="nomor_polisi" class="col-sm-2 col-form-label">Nomor Polisi</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="nomor_polisi">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="driver_name" class="col-sm-2 col-form-label">Driver Name</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="driver_name">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="nomor_surat_jalan" class="col-sm-2 col-form-label">Nomor Surat Jalan</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="nomor_surat_jalan">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="waktu_checkin" class="col-sm-2 col-form-label">Waktu Checkin</label>
+            <div class="col-sm-10">
+                <input type="date" class="form-control" id="waktu_checkin">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="offset-10 col-sm-2">
+                <button type="button" class=" form-control btn btn-primary" id="addRow">Add Po</button>
+            </div>
+        </div>
+        <div id="list">
+            @*<div id="inputFormRow" class="row mb-3">
+                <div class="col-sm-4 offset-2">
+                    <input type="text"  class="form-control" id="nomor_po" placeholder="Nomor Po">
+                </div>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="principal" placeholder="Principal">
+                </div>
+                <div class="col-sm-2">
+                    <Button type="button" class="form-control btn btn-danger" id="delete">Delete</Button>
+                </div>
+            </div>*@
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-5 offset-2">
+                <button type="submit" class="btn btn-primary" id="submit">Submit</button>
+            </div>
+        </div>       
+    </form>
+</Container>
+@section Scripts {
+    
+<script>
+
+    var list_po = [];
+    var data_po = {};
+
+    $(document).ready(function () {
+
+        
+        // remove row
+        $(document).on('click', '#delete', function () {
+            $(this).closest('#inputFormRow').remove();
+        })
+ 
+        $("#addRow").click(function () {
+            var html = `<div id="inputFormRow" class="row mb-3">
+                  <div class="col-sm-4 offset-2">
+                    <input type="text" name="nomor_po[]" class="form-control" id="nomor_po" placeholder="Nomor Po">
+                </div>
+                <div class="col-sm-4">
+                    <input type="text" name=principal[] class="form-control" id="principal" placeholder="Principal">
+                </div>
+                <div class="col-sm-2">
+                    <Button type="button" class="form-control btn btn-danger" id="delete">Delete</Button>
+                </div>
+            </div>`;
+
+            $('#list').append(html);
+        });
+
+        $('#submit').on('click',function () {
+            SendDriver();
+            return false;
+        });
+       
+    });
+
+    let getListPo = () => {
+        var arr_nomor_po = $('input[name^=nomor_po]').map(function (idx, elem) {
+            return $(elem).val();
+        }).get();
+
+        var arr_principal = $('input[name^=principal]').map(function (idx, elem) {
+            return $(elem).val();
+        }).get();
+
+        for (let i = 0; i < arr_nomor_po.length; i++) {
+            data_po = {
+                nomor_po: arr_nomor_po[i],
+                principal: arr_principal[i]
+            }
+            list_po.push(data_po);
+        }
+
+        console.log(list_po);
+    }
+
+    let SendDriver = () => {
+
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+        var dateTime = date + ' ' + time;
+
+        getListPo();
+
+        var data = {
+            nomor_polisi: $("#nomor_polisi").val(),
+            driver_name: $("#driver_name").val(),
+            nomor_surat_jalan: $("#nomor_surat_jalan").val(),
+            waktu_checkin: dateTime,
+            list_po: list_po
+        }
+
+        console.log(data);
+        $.ajax({
+            type: 'POST',
+            url: '/Home/SendDriver',
+            data: data
+        }).done((result) => {
+            switch (result) {
+                case 200 :
+                    console.log("sukses");
+                    break
+                default:
+                    console.log("gagal");
+                 
+            }
+         
+        }).fail((result) => {
+            alert("Cek Api");
+
+        })
+    }
+</script>
+}
